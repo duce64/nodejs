@@ -25,6 +25,13 @@ const examResultRoutes = require('./routes/quizResults');
 app.use('/api/results', examResultRoutes);
 // Sử dụng routes
 app.use('/api/questions', questionRoutess);
+// Import routes
+const testRoutes = require('./routes/test');
+// Sử dụng routes
+app.use('/api/exams', testRoutes);
+const notificationRoutes = require('./routes/notification');
+app.use('/api/notifications', notificationRoutes);
+
 // Kết nối MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Kết nối MongoDB thành công'))
@@ -106,7 +113,23 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Lỗi máy chủ', error: err.message });
   }
 });
+// API: GET /api/users/by-department?department=Ban%20Tham%20Mưu
+app.get("/by-department", async (req, res) => {
+  try {
+    const { department } = req.query;
 
+    if (!department) {
+      return res.status(400).json({ error: "Thiếu thông tin department." });
+    }
+
+    const users = await User.find({ department });
+
+    res.json(users);
+  } catch (error) {
+    console.error("Lỗi khi lấy user theo department:", error);
+    res.status(500).json({ error: "Lỗi server khi lọc user theo phòng ban." });
+  }
+});
 app.listen(process.env.PORT, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${process.env.PORT}`);
 });
