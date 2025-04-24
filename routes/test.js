@@ -44,6 +44,7 @@ router.post("/create", async (req, res) => {
         content: `Bạn có bài kiểm tra mới: ${title}`,
         userId,
         date: new Date(),
+        expiredDate: expiredDate, // thêm trường này để client nhận biết
         questionId: questionPackageId, // thêm trường này để client nhận biết
       });
       

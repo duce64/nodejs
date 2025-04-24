@@ -32,7 +32,8 @@ router.get('/user/:userId', async (req, res) => {
           date: notif.date,
           questionId: notif.questionId,
           categoryId: categoryId,
-          read: notif.read,
+          isRead: notif.isRead,
+          expiredDate: notif.expiredDate,
         };
       })
     );
@@ -41,6 +42,41 @@ router.get('/user/:userId', async (req, res) => {
   } catch (err) {
     console.error("Lỗi lấy thông báo:", err);
     res.status(500).json({ error: 'Không thể lấy thông báo.' });
+  }
+});
+// Đánh dấu 1 thông báo là đã đọc
+router.put('/mark-read/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updated = await Notification.findByIdAndUpdate(
+      id,
+      { isRead: true },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ error: 'Thông báo không tồn tại' });
+    }
+
+    res.status(200).json({ message: 'Đã đánh dấu là đã đọc', notification: updated });
+  } catch (error) {
+    console.error("Lỗi đánh dấu đã đọc:", error);
+    res.status(500).json({ error: 'Không thể đánh dấu thông báo' });
+  }
+});
+// PUT /api/notifications/:id/read
+router.put('/:id/read', async (req, res) => {
+  try {
+    const notif = await Notification.findByIdAndUpdate(
+      req.params.id,
+      { isRead: true },
+      { new: true }
+    );
+    res.status(200).json(notif);
+  } catch (error) {
+    console.error("Lỗi cập nhật read:", error);
+    res.status(500).json({ error: 'Cập nhật trạng thái đọc thất bại' });
   }
 });
 

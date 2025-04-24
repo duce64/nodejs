@@ -1,11 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const ExamResult = require('../models/quizResultSchema'); // Đường dẫn đến file quizResultSchema.js
+const ExamResult = require('../models/quizResultSchema');
 
-// POST /api/results/add
+// ✅ POST: Thêm kết quả
 router.post('/add', async (req, res) => {
   try {
-    const { name, score, status, date, categoryId, questionId, userId } = req.body;
+    const {
+      name, score, status, date,
+      categoryId, questionId, userId,
+      isTest = false, testId = null
+    } = req.body;
+
+    // Nếu là bài kiểm tra thì kiểm tra trùng
+    if (isTest && testId) {
+      const existed = await ExamResult.findOne({ userId, testId });
+      if (existed) {
+        return res.status(400).json({ error: 'Bạn đã làm bài kiểm tra này rồi.' });
+      }
+    }
 
     const result = new ExamResult({
       name,
@@ -13,8 +25,10 @@ router.post('/add', async (req, res) => {
       status,
       date: new Date(date),
       categoryId,
-      questionId,     // là Number
-      userId          // là ObjectId từ bảng User
+      questionId,
+      userId,
+      isTest,
+      testId
     });
 
     await result.save();
@@ -24,7 +38,29 @@ router.post('/add', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
-// GET /api/results/by-user/:userId
+
+// GET /api/results/check?userId=...&testId=...
+router.get('/check', async (req, res) => {
+  try {
+    const { userId, testId } = req.query;
+    if (!userId || !testId) {
+      return res.status(400).json({ error: 'Thiếu userId hoặc testId' });
+    }
+
+    const result = await ExamResult.findOne({
+      userId,
+      testId,
+      isTest: true // ✅ chỉ kiểm tra bài thi chính thức
+    });
+
+    res.status(200).json({ hasTaken: !!result });
+  } catch (error) {
+    console.error("Error checking test:", error);
+    res.status(500).json({ error: "Lỗi kiểm tra kết quả" });
+  }
+});
+
+// ✅ GET kết quả theo user
 router.get('/by-user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -35,7 +71,8 @@ router.get('/by-user/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch results for user' });
   }
 });
-// GET tất cả kết quả
+
+// ✅ GET tất cả kết quả
 router.get('/', async (req, res) => {
   try {
     const results = await ExamResult.find().sort({ date: -1 }).populate('userId', 'username');

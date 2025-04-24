@@ -16,14 +16,15 @@ const notificationSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  expiredDate: {
+    type: Date,
+    default: Date.now
+  },
   questionId: {
     type: Number,
     required: true // Có thể để false nếu muốn thông báo chung
   },
-  read: {
-    type: Boolean,
-    default: false
-  }
+  isRead: { type: Boolean, default: false }, // Thêm trường này
 });
 
 module.exports = mongoose.model('Notification', notificationSchema);
