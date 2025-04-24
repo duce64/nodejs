@@ -1,7 +1,7 @@
 // routes/category.js
 const express = require('express');
 const router = express.Router();
-const Category = require('../models/Category');
+const Category = require('../models/category'); // model chứa danh mục
 
 // Thêm danh mục
 router.post('/add', async (req, res) => {
