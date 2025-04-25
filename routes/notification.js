@@ -34,6 +34,7 @@ router.get('/user/:userId', async (req, res) => {
           categoryId: categoryId,
           isRead: notif.isRead,
           expiredDate: notif.expiredDate,
+          idTest: notif.idTest,
         };
       })
     );

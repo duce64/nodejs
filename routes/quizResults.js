@@ -82,5 +82,16 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// ✅ GET kết quả theo testId
+router.get('/by-test/:testId', async (req, res) => {
+  try {
+    const { testId } = req.params;
+    const results = await ExamResult.find({ testId }).populate('userId', 'username');
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error fetching results by testId:", err);
+    res.status(500).json({ error: 'Failed to fetch results for test' });
+  }
+});
 
 module.exports = router;

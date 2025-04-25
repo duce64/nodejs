@@ -36,7 +36,31 @@ app.use('/api/notifications', notificationRoutes);
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Kết nối MongoDB thành công'))
   .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err));
+// PUT /api/users/change-password
+app.put('/change-password', async (req, res) => {
+  const { userId, oldPassword, newPassword } = req.body;
 
+  if (!userId || !oldPassword || !newPassword) {
+    return res.status(400).json({ message: 'Thiếu thông tin' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) return res.status(401).json({ message: 'Mật khẩu cũ không đúng' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: 'Đổi mật khẩu thành công' });
+  } catch (err) {
+    console.error('Lỗi đổi mật khẩu:', err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
 // Đăng ký
 app.post('/register', async (req, res) => {
   try {
@@ -130,6 +154,31 @@ app.get("/by-department", async (req, res) => {
     res.status(500).json({ error: "Lỗi server khi lọc user theo phòng ban." });
   }
 });
+
+app.put('/update/:id', async (req, res) => {
+  try {
+    const { fullname, detail, department } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { fullname, detail, department },
+      { new: true }
+    );
+
+    const token = jwt.sign({
+      userId: user._id,
+      role: user.role,
+      name: user.username,
+      detail: user.detail,
+      department: user.department,
+      fullname: user.fullname
+    }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+    res.json({ message: "Cập nhật thành công", token });
+  } catch (error) {
+    res.status(500).json({ message: "Cập nhật thất bại", error });
+  }
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${process.env.PORT}`);
 });

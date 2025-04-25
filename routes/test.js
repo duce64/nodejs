@@ -44,8 +44,9 @@ router.post("/create", async (req, res) => {
         content: `Bạn có bài kiểm tra mới: ${title}`,
         userId,
         date: new Date(),
-        expiredDate: expiredDate, // thêm trường này để client nhận biết
-        questionId: questionPackageId, // thêm trường này để client nhận biết
+        expiredDate: expiredDate,
+        questionId: questionPackageId,
+        idTest: test._id, // ✅ Thêm ID bài kiểm tra vào notification
       });
       
     }

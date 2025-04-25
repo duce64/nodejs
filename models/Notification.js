@@ -1,5 +1,3 @@
-// models/notification.js hoặc notificationSchema.js
-
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
@@ -22,9 +20,17 @@ const notificationSchema = new mongoose.Schema({
   },
   questionId: {
     type: Number,
-    required: true // Có thể để false nếu muốn thông báo chung
+    required: false // Nếu không cần bắt buộc
   },
-  isRead: { type: Boolean, default: false }, // Thêm trường này
+  idTest: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Test',
+    required: false // ✅ Trường mới để biết notification thuộc bài kiểm tra nào
+  },
+  isRead: {
+    type: Boolean,
+    default: false
+  }
 });
 
 module.exports = mongoose.model('Notification', notificationSchema);
