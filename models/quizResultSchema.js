@@ -9,6 +9,6 @@ const examResultSchema = new mongoose.Schema({
   questionId: { type: Number, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   isTest: { type: Boolean, default: false }, // ✅ thêm trường này để phân biệt bài kiểm tra chính thức
-  testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test' }, // ✅ liên kết đến bài kiểm tra
+  testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test', default: null }, // ✅ liên kết đến bài kiểm tra
 });
 module.exports = mongoose.model('ExamResult', examResultSchema); 

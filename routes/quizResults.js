@@ -18,7 +18,7 @@ router.post('/add', async (req, res) => {
         return res.status(400).json({ error: 'Bạn đã làm bài kiểm tra này rồi.' });
       }
     }
-
+    const cleanedTestId = (testId === 'null' || testId === '') ? null : testId;
     const result = new ExamResult({
       name,
       score,
@@ -28,7 +28,7 @@ router.post('/add', async (req, res) => {
       questionId,
       userId,
       isTest,
-      testId
+      cleanedTestId 
     });
 
     await result.save();
