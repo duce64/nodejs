@@ -15,10 +15,11 @@ router.post("/create", async (req, res) => {
         selectedUsers,
         expiredDate, // từ client
         department,
-        userId // người tạo bài kiểm tra
+        userId,
+        categoryId // người tạo bài kiểm tra
       } = req.body;
       
-      if (!title || !questionPackageId || !selectedUsers || !expiredDate || !userId) {
+      if (!title || !questionPackageId || !selectedUsers || !expiredDate || !userId || !categoryId) {
         return res.status(400).json({ error: "Thiếu thông tin bắt buộc (title, package, users...)." });
       }
       
@@ -28,7 +29,8 @@ router.post("/create", async (req, res) => {
         users: selectedUsers,
         deadline: expiredDate, // gán đúng key
         department,
-        userId
+        userId,
+        categoryId, // người tạo bài kiểm tra
       });
 
     await test.save();
@@ -100,5 +102,33 @@ router.put("/:id", async (req, res) => {
       res.status(500).json({ error: "Lỗi khi cập nhật bài kiểm tra" });
     }
   });
-      
+      // GET /api/tests/ongoing
+router.get("/ongoing", async (req, res) => {
+  try {
+    const now = new Date();
+
+    const ongoingTests = await Test.find({ deadline: { $gt: now } })
+      .sort({ deadline: 1 });
+
+    res.json(ongoingTests);
+  } catch (error) {
+    console.error("❌ Lỗi lấy bài kiểm tra đang diễn ra:", error);
+    res.status(500).json({ error: "Không thể lấy bài kiểm tra đang diễn ra" });
+  }
+});
+// ✅ API lấy danh sách bài kiểm tra đã hết hạn
+router.get("/expired", async (req, res) => {
+  try {
+    const now = new Date(); // thời gian hiện tại
+    const expiredTests = await Test.find({
+      deadline: { $lt: now } // deadline nhỏ hơn hiện tại => đã hết hạn
+    }).sort({ deadline: -1 }); // sắp xếp từ mới nhất đến cũ nhất
+
+    res.json(expiredTests);
+  } catch (error) {
+    console.error("❌ Lỗi lấy bài kiểm tra đã hết hạn:", error);
+    res.status(500).json({ error: "Không thể lấy danh sách bài kiểm tra đã hết hạn." });
+  }
+});
+
 module.exports = router;
