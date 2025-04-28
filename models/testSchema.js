@@ -10,6 +10,8 @@ const testSchema = new mongoose.Schema({
   deadline: { type: Date, required: true },
   createdAt: { type: Date, default: Date.now },
   categoryId: { type: Number, required: true }, // người tạo bài kiểm tra  
+  timeLimit: { type: Number, default: 60 }, // ⬅️ thời gian làm bài (tính bằng phút)
+  questionCount: { type: Number, default: 10 }, // ⬅️ số lượng câu hỏi
 });
 
 module.exports = mongoose.model('Test', testSchema);

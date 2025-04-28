@@ -5,33 +5,36 @@ const mongoose = require("mongoose");
 const Test = require("../models/testSchema");
 const Notification = require("../models/Notification");
 const User = require("../models/user");
-
-// ✅ Tạo bài kiểm tra mới
+// ✅ Tạo bài kiểm tra mới (có timeLimit và questionCount)
 router.post("/create", async (req, res) => {
   try {
     const {
-        title,
-        questionPackageId,
-        selectedUsers,
-        expiredDate, // từ client
-        department,
-        userId,
-        categoryId // người tạo bài kiểm tra
-      } = req.body;
-      
-      if (!title || !questionPackageId || !selectedUsers || !expiredDate || !userId || !categoryId) {
-        return res.status(400).json({ error: "Thiếu thông tin bắt buộc (title, package, users...)." });
-      }
-      
-      const test = new Test({
-        title,
-        questionPackageId,
-        users: selectedUsers,
-        deadline: expiredDate, // gán đúng key
-        department,
-        userId,
-        categoryId, // người tạo bài kiểm tra
-      });
+      title,
+      questionPackageId,
+      selectedUsers,
+      expiredDate,
+      department,
+      userId,
+      categoryId,
+      timeLimit,        // ⬅️ thêm thời gian làm bài
+      questionCount     // ⬅️ thêm số lượng câu hỏi
+    } = req.body;
+
+    if (!title || !questionPackageId || !selectedUsers || !expiredDate || !userId || !categoryId) {
+      return res.status(400).json({ error: "Thiếu thông tin bắt buộc (title, package, users...)." });
+    }
+
+    const test = new Test({
+      title,
+      questionPackageId,
+      users: selectedUsers,
+      deadline: expiredDate,
+      department,
+      userId,
+      categoryId,
+      timeLimit,      // ⬅️ gán vào model
+      questionCount   // ⬅️ gán vào model
+    });
 
     await test.save();
 
@@ -48,9 +51,8 @@ router.post("/create", async (req, res) => {
         date: new Date(),
         expiredDate: expiredDate,
         questionId: questionPackageId,
-        idTest: test._id, // ✅ Thêm ID bài kiểm tra vào notification
+        idTest: test._id,
       });
-      
     }
 
     res.status(201).json({ message: "Tạo bài kiểm tra thành công." });
@@ -59,6 +61,7 @@ router.post("/create", async (req, res) => {
     res.status(500).json({ error: "Tạo kiểm tra thất bại.", details: error.message });
   }
 });
+
 // GET /api/tests
 router.get("/", async (req, res) => {
     try {
