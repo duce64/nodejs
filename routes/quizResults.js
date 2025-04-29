@@ -10,7 +10,7 @@ router.post('/add', async (req, res) => {
       categoryId, questionId, userId,
       isTest = false, testId = null
     } = req.body;
-
+    const finalTestId = isTest ? (testId ?? new mongoose.Types.ObjectId()) : null;
     // Nếu là bài kiểm tra thì kiểm tra trùng
     if (isTest && testId) {
       const existed = await ExamResult.findOne({ userId, testId });
@@ -28,7 +28,7 @@ router.post('/add', async (req, res) => {
       questionId,
       userId,
       isTest,
-      testId 
+      testId: finalTestId
     });
 
     await result.save();

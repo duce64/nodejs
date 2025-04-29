@@ -110,22 +110,30 @@ router.post("/bulk", async (req, res) => {
     }
   });
   // Lấy danh sách câu hỏi theo idQuestionPackage
-router.get('/package/:id', async (req, res) => {
-  try {
-    const packageId = parseInt(req.params.id);
-
-    const questions = await Question.find({ idQuestionPackage: packageId });
-
-    if (!questions || questions.length === 0) {
-      return res.status(404).json({ message: 'No questions found for this package ID.' });
+  router.get('/package/:id', async (req, res) => {
+    try {
+      const packageId = parseInt(req.params.id);
+      const numberQuestion = parseInt(req.query.numberQuestion); // ✅ Lấy từ query param
+  
+      let questions = await Question.find({ idQuestionPackage: packageId });
+  
+      if (!questions || questions.length === 0) {
+        return res.status(404).json({ message: 'No questions found for this package ID.' });
+      }
+  
+      // ✅ Nếu numberQuestion hợp lệ và nhỏ hơn số câu, thì random
+      if (!isNaN(numberQuestion) && numberQuestion < questions.length) {
+        // Shuffle và chọn ngẫu nhiên
+        questions = questions.sort(() => 0.5 - Math.random()).slice(0, numberQuestion);
+      }
+  
+      res.status(200).json({ result: questions });
+    } catch (error) {
+      console.error('Error getting questions by package ID:', error);
+      res.status(500).json({ message: 'Server error' });
     }
-
-    res.status(200).json({ result: questions });
-  } catch (error) {
-    console.error('Error getting questions by package ID:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+  });
+  
 
   
   

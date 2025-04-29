@@ -12,6 +12,7 @@ const testSchema = new mongoose.Schema({
   categoryId: { type: Number, required: true }, // người tạo bài kiểm tra  
   timeLimit: { type: Number, default: 60 }, // ⬅️ thời gian làm bài (tính bằng phút)
   questionCount: { type: Number, default: 10 }, // ⬅️ số lượng câu hỏi
+  selectedUserIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
 
 module.exports = mongoose.model('Test', testSchema);
