@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
 const rateLimit = require('express-rate-limit');
+const CryptoJS = require("crypto-js");
+
+
+const SECRET_KEY = "1234567890abcdef"; // 16 ký tự
+const IV = "abcdef1234567890";         // 16 ký tự
 
 // Giới hạn: tối đa 100 request mỗi 15 phút
 const categoryLimiter = rateLimit({
@@ -120,31 +125,40 @@ router.post("/bulk", async (req, res) => {
       res.status(500).json({ message: 'Lỗi server khi thêm câu hỏi.' });
     }
   });
-  // Lấy danh sách câu hỏi theo idQuestionPackage
   router.get('/package/:id', async (req, res) => {
     try {
       const packageId = parseInt(req.params.id);
-      const numberQuestion = parseInt(req.query.numberQuestion); // ✅ Lấy từ query param
-  
+      const numberQuestion = parseInt(req.query.numberQuestion);
       let questions = await Question.find({ idQuestionPackage: packageId });
   
       if (!questions || questions.length === 0) {
-        return res.status(404).json({ message: 'No questions found for this package ID.' });
+        return res.status(404).json({ message: 'No questions found' });
       }
   
-      // ✅ Nếu numberQuestion hợp lệ và nhỏ hơn số câu, thì random
       if (!isNaN(numberQuestion) && numberQuestion < questions.length) {
-        // Shuffle và chọn ngẫu nhiên
         questions = questions.sort(() => 0.5 - Math.random()).slice(0, numberQuestion);
       }
   
-      res.status(200).json({ result: questions });
+      const data = JSON.stringify(questions);
+      const key = CryptoJS.enc.Utf8.parse(SECRET_KEY);
+      const iv = CryptoJS.enc.Utf8.parse(IV);
+  
+      const encrypted = CryptoJS.AES.encrypt(data, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+  
+      res.json({
+        result: encrypted.toString(),
+        iv: iv.toString(CryptoJS.enc.Utf8), // Gửi lại nếu phía Flutter cần
+      });
+  
     } catch (error) {
-      console.error('Error getting questions by package ID:', error);
+      console.error('Encryption error:', error);
       res.status(500).json({ message: 'Server error' });
     }
   });
-  
 // DELETE /api/questions/package/:packageId
 router.delete('/package/:packageId', async (req, res) => {
   const { packageId } = req.params;
