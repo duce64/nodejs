@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-
+const rateLimit = require('express-rate-limit');
 
 const User = require('./models/user');
 const app = express();
@@ -13,7 +13,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cors());
 app.use(express.json());
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 phút
+  max: 100, // tối đa 100 request mỗi IP trong 15 phút
+  message: {
+    message: 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.'
+  },
+  standardHeaders: true, // hiển thị thông tin rate limit trong headers
+  legacyHeaders: false,  // bỏ headers cũ
+});
 
+module.exports = limiter;
 const categoryRoutes = require('./routes/category');
 app.use('/api/categories', categoryRoutes);
 const questionRoutes = require('./routes/questionPackage');
@@ -62,7 +72,7 @@ app.put('/change-password', async (req, res) => {
   }
 });
 // Đăng ký
-app.post('/register', async (req, res) => {
+app.post('/register',limiter, async (req, res) => {
   try {
     const { username, password, role, detail, department,fullname } = req.body;
 
@@ -117,7 +127,7 @@ app.get('/getAllUser', async (req, res) => {
   }
 });
 // Đăng nhập
-app.post('/login', async (req, res) => {
+app.post('/login',limiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 

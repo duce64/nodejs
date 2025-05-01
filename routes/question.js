@@ -1,6 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Question = require('../models/Question');
+const rateLimit = require('express-rate-limit');
+
+// Giới hạn: tối đa 100 request mỗi 15 phút
+const categoryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.',
+});
+
+// Áp dụng middleware cho toàn bộ route
+router.use(categoryLimiter);
 
 // Lấy idQuestion lớn nhất hiện tại và tăng lên 1
 const getNextQuestionId = async () => {
@@ -134,6 +145,75 @@ router.post("/bulk", async (req, res) => {
     }
   });
   
+// DELETE /api/questions/package/:packageId
+router.delete('/package/:packageId', async (req, res) => {
+  const { packageId } = req.params;
+
+  if (!packageId || isNaN(Number(packageId))) {
+    return res.status(400).json({ message: 'ID gói câu hỏi không hợp lệ.' });
+  }
+
+  try {
+    const result = await Question.deleteMany({ idQuestionPackage: Number(packageId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy câu hỏi nào để xóa.' });
+    }
+
+    res.status(200).json({
+      message: `Đã xóa ${result.deletedCount} câu hỏi thuộc gói ${packageId}.`
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server khi xóa câu hỏi.' });
+  }
+});
+// DELETE /api/questions/:id
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Question.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'Không tìm thấy câu hỏi để xóa.' });
+    }
+
+    res.status(200).json({ message: 'Xóa câu hỏi thành công.' });
+  } catch (error) {
+    console.error('Lỗi khi xóa câu hỏi:', error);
+    res.status(500).json({ message: 'Lỗi server khi xóa câu hỏi.' });
+  }
+});
+// PUT /api/questions/:id
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { question, correct_answer, incorrect_answers } = req.body;
+
+    if (!question || !correct_answer || !Array.isArray(incorrect_answers) || incorrect_answers.length !== 3) {
+      return res.status(400).json({ message: 'Dữ liệu cập nhật không hợp lệ.' });
+    }
+
+    const updated = await Question.findByIdAndUpdate(
+      id,
+      {
+        question,
+        correct_answer,
+        incorrect_answers
+      },
+      { new: true } // Trả về bản ghi sau khi cập nhật
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Không tìm thấy câu hỏi để cập nhật.' });
+    }
+
+    res.status(200).json({ message: 'Cập nhật câu hỏi thành công.', question: updated });
+  } catch (error) {
+    console.error('Lỗi khi cập nhật câu hỏi:', error);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật câu hỏi.' });
+  }
+});
 
   
   

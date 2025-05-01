@@ -2,6 +2,17 @@ const express = require("express");
 const router = express.Router();
 const Notification = require("../models/Notification"); // model chứa thông báo
 const Question = require('../models/QuestionPackage');
+const rateLimit = require('express-rate-limit');
+
+// Giới hạn: tối đa 100 request mỗi 15 phút
+const categoryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.',
+});
+
+// Áp dụng middleware cho toàn bộ route
+router.use(categoryLimiter);
 
 // GET /api/notifications/user/:userId
 router.get('/user/:userId', async (req, res) => {
