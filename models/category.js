@@ -10,7 +10,7 @@ const categorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  image: String, // base64 hoặc URL
+  // image: String, // base64 hoặc URL
 });
 
 module.exports = mongoose.model('Category', categorySchema);

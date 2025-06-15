@@ -23,7 +23,7 @@ router.post('/add', async (req, res) => {
         const newCategory = new Category({
             idCategory: newIdCategory,
             name: req.body.name,
-            image: req.body.image,
+            // image: req.body.image,
         });
 
         await newCategory.save();
@@ -47,12 +47,12 @@ router.get('/', async (req, res) => {
 // ✅ Cập nhật danh mục theo idCategory
 router.put('/:idCategory', async (req, res) => {
   try {
-      const { name, image } = req.body;
+      const { name } = req.body;
       const { idCategory } = req.params;
 
       const updatedCategory = await Category.findOneAndUpdate(
           { idCategory: parseInt(idCategory) },
-          { name, image },
+          { name },
           { new: true }
       );
 
