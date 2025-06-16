@@ -41,6 +41,8 @@ const testRoutes = require('./routes/test');
 app.use('/api/exams', testRoutes);
 const notificationRoutes = require('./routes/notification');
 app.use('/api/notifications', notificationRoutes);
+// const uploadDocxRoute = require('./routes/word');
+// app.use('/api/upload-docx', uploadDocxRoute);
 
 // Kết nối MongoDB
 mongoose.connect(process.env.MONGO_URI)

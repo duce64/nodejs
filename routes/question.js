@@ -69,62 +69,63 @@ router.post("/bulk", async (req, res) => {
     }
   });
   router.post('/add-questions', async (req, res) => {
-    try {
-      const questions = req.body;
-  
-      if (!Array.isArray(questions) || questions.length === 0) {
-        return res.status(400).json({ message: 'Danh sách câu hỏi không hợp lệ.' });
-      }
-  
-      const insertList = [];
-      const errors = [];
-  
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        const {
-          question,
-          correct_answer,
-          incorrect_answers,
-          categoryId,
-          idQuestionPackage
-        } = q;
-  
-        // Validate cơ bản
-        if (
-          typeof categoryId !== 'number' ||
-          typeof idQuestionPackage !== 'number' ||
-          typeof question !== 'string' ||
-          typeof correct_answer !== 'string' ||
-          !Array.isArray(incorrect_answers) ||
-          incorrect_answers.length !== 3
-        ) {
-          errors.push(`Câu hỏi thứ ${i + 1} không hợp lệ: ${JSON.stringify(q)}`);
-          continue;
-        }
-  
-        insertList.push({
-          name: question,
-          correct_answer,
-          incorrect_answers,
-          categoryId,
-          idQuestionPackage
-        });
-      }
-  
-      if (errors.length > 0) {
-        return res.status(400).json({
-          message: 'Có lỗi trong danh sách câu hỏi.',
-          errors
-        });
-      }
-  
-      await Question.insertMany(insertList);
-      res.status(200).json({ message: 'Thêm tất cả câu hỏi thành công.' });
-    } catch (error) {
-      console.error('Lỗi khi thêm danh sách câu hỏi:', error);
-      res.status(500).json({ message: 'Lỗi server khi thêm câu hỏi.' });
+  try {
+    const questions = req.body;
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ message: 'Danh sách câu hỏi không hợp lệ.' });
     }
-  });
+
+    const insertList = [];
+    const errors = [];
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const {
+        question,
+        correct_answer,
+        incorrect_answers,
+        categoryId,
+        idQuestionPackage
+      } = q;
+
+      // Validate cơ bản
+      if (
+        typeof categoryId !== 'number' ||
+        typeof idQuestionPackage !== 'number' ||
+        typeof question !== 'string' ||
+        typeof correct_answer !== 'string' ||
+        !Array.isArray(incorrect_answers) ||
+        incorrect_answers.length === 0
+      ) {
+        errors.push(`Câu hỏi thứ ${i + 1} không hợp lệ: ${JSON.stringify(q)}`);
+        continue;
+      }
+
+      insertList.push({
+        name: question,
+        correct_answer,
+        incorrect_answers,
+        categoryId,
+        idQuestionPackage
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: 'Có lỗi trong danh sách câu hỏi.',
+        errors
+      });
+    }
+
+    await Question.insertMany(insertList);
+    res.status(200).json({ message: 'Thêm tất cả câu hỏi thành công.' });
+  } catch (error) {
+    console.error('Lỗi khi thêm danh sách câu hỏi:', error);
+    res.status(500).json({ message: 'Lỗi server khi thêm câu hỏi.' });
+  }
+});
+
   router.get('/package/:id', async (req, res) => {
     try {
       const packageId = parseInt(req.params.id);
@@ -204,7 +205,7 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { question, correct_answer, incorrect_answers } = req.body;
 
-    if (!question || !correct_answer || !Array.isArray(incorrect_answers) || incorrect_answers.length !== 3) {
+    if (!question || !correct_answer || !Array.isArray(incorrect_answers) ) {
       return res.status(400).json({ message: 'Dữ liệu cập nhật không hợp lệ.' });
     }
 

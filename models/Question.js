@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
-
   name: {
     type: String,
     required: true
@@ -15,9 +14,9 @@ const questionSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: function (arr) {
-        return arr.length === 3;
+        return Array.isArray(arr) && arr.length >= 1;
       },
-      message: 'Phải có đúng 3 đáp án sai.'
+      message: 'Phải có ít nhất 1 đáp án sai.'
     }
   },
   categoryId: {
