@@ -212,7 +212,7 @@ router.put('/:id', async (req, res) => {
     const updated = await Question.findByIdAndUpdate(
       id,
       {
-        question,
+        name,
         correct_answer,
         incorrect_answers
       },
