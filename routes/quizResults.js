@@ -19,7 +19,7 @@ router.post('/add', async (req, res) => {
     const {
       name, score, status, date,
       categoryId, questionId, userId,
-      isTest = false, testId = null
+      isTest = false, testId = null,numberQuestion
     } = req.body;
     const finalTestId = isTest ? (testId ?? new mongoose.Types.ObjectId()) : null;
     // Nếu là bài kiểm tra thì kiểm tra trùng
@@ -39,7 +39,8 @@ router.post('/add', async (req, res) => {
       questionId,
       userId,
       isTest,
-      testId: finalTestId
+      testId: finalTestId,
+      numberQuestion
     });
 
     await result.save();
